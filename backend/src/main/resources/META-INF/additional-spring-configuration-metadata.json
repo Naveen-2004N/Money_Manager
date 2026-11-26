@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "money.manager.frontend.url",
+      "type": "java.lang.String",
+      "description": "Frontend URL for notification links and CORS"
+    }
+  ]
+}
