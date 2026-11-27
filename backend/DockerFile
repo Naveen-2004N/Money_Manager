@@ -21,7 +21,7 @@ WORKDIR /app
 # Builder se jar copy karo
 COPY --from=builder /app/target/*.jar app.jar
 
-ENV SPRING_PROFILES_ACTIVE=prod
+# Default port exposure
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
