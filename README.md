@@ -27,11 +27,16 @@
 - [Architecture & Tech Stack](#-architecture--tech-stack)
 - [Project Structure](#-project-structure)
 - [Database Schema](#-database-schema)
-- [Getting Started](#-getting-started)
+- [Getting Started (Local)](#-getting-started-local)
   - [Prerequisites](#prerequisites)
   - [1. Backend Setup](#1-backend-setup-spring-boot)
   - [2. Frontend Setup](#2-frontend-setup-react--vite)
 - [Docker Deployment](#-docker-deployment)
+- [Cloud Deployment (Render & Vercel)](#-cloud-deployment-render--vercel)
+  - [Architecture Overview](#architecture-overview)
+  - [Step 1: PostgreSQL on Render](#step-1-create-postgresql-database-on-render)
+  - [Step 2: Backend on Render](#step-2-deploy-backend-web-service-on-render)
+  - [Step 3: Frontend on Vercel](#step-3-deploy-frontend-on-vercel)
 - [API Reference](#-api-reference)
 - [Security & Authentication](#-security--authentication)
 - [License](#-license)
@@ -97,8 +102,8 @@
 - **Containerization**: Multi-stage Dockerfile (Eclipse Temurin 21 JRE)
 
 ### Database
-- **Primary**: MySQL 8.0+
-- **Production/Cloud Ready**: PostgreSQL
+- **Primary / Local**: MySQL 8.0+
+- **Production / Cloud**: PostgreSQL
 
 ---
 
@@ -131,6 +136,7 @@ Money_Manager/
 │   ├── package.json                             # Dependencies & scripts
 │   ├── vite.config.js                           # Vite build configuration
 │   ├── tailwind.config.js                       # Tailwind CSS styling configuration
+│   ├── vercel.json                              # SPA routing rewrite rule
 │   ├── .env.example                             # Environment variable template
 │   └── src/
 │       ├── App.jsx                              # Route definitions & theme provider
@@ -202,7 +208,7 @@ erDiagram
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started (Local)
 
 ### Prerequisites
 
@@ -215,14 +221,13 @@ erDiagram
 
 ### 1. Backend Setup (Spring Boot)
 
-1. **Clone the repository**:
+1. **Navigate to the backend directory**:
    ```bash
-   git clone https://github.com/Naveen-2004N/Money_Manager.git
-   cd Money_Manager/backend
+   cd backend
    ```
 
 2. **Configure Database Connection**:
-   Check `src/main/resources/application.properties` and update your MySQL credentials if needed:
+   Check `src/main/resources/application.properties` and verify your MySQL credentials:
    ```properties
    spring.datasource.url=jdbc:mysql://localhost:3306/moneymanager?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
    spring.datasource.username=root
@@ -230,7 +235,7 @@ erDiagram
    ```
 
 3. **Build and Run**:
-   - **On Windows (PowerShell / CMD)**:
+   - **On Windows**:
      ```powershell
      .\mvnw.cmd clean spring-boot:run
      ```
@@ -256,7 +261,7 @@ erDiagram
    ```bash
    cp .env.example .env
    ```
-   *(Ensure `VITE_API_BASE_URL` points to `http://localhost:8080/api/v1.0`)*
+   *(Ensure `VITE_API_BASE_URL=http://localhost:8080/api/v1.0`)*
 
 3. **Install Dependencies**:
    ```bash
@@ -269,7 +274,7 @@ erDiagram
    ```
 
 5. **Open in Browser**:
-   Visit **`http://localhost:5173`** to access the Money Manager application.
+   Visit **`http://localhost:5173`** to access the application.
 
 ---
 
@@ -292,6 +297,77 @@ The backend includes a multi-stage Dockerfile for fast, containerized deployment
      -e MONEY_MANAGER_POSTGRESQL_PASSWORD="your_password" \
      --name moneymanager-api moneymanager-backend:latest
    ```
+
+---
+
+## 🌐 Cloud Deployment (Render & Vercel)
+
+### Architecture Overview
+
+| Component | Recommended Platform | Type | Free Tier |
+|---|---|---|:---:|
+| **Database** | [Render](https://render.com) | Managed PostgreSQL | ✅ |
+| **Backend API** | [Render](https://render.com) | Docker Web Service | ✅ |
+| **Frontend UI** | [Vercel](https://vercel.com) *(or Render)* | Vite SPA Static Site | ✅ |
+
+---
+
+### Step 1: Create PostgreSQL Database on Render
+
+1. Log into your [Render Dashboard](https://dashboard.render.com).
+2. Click **New +** → **PostgreSQL**.
+3. Configure the database:
+   - **Name**: `moneymanager-db`
+   - **Database**: `moneymanager`
+   - **User**: `moneymanager_user`
+   - **Region**: Choose the closest region (e.g. `Oregon`)
+   - **Plan**: `Free`
+4. Click **Create Database**.
+5. Once created, copy the **Internal Database URL** (for example: `postgres://moneymanager_user:secret@dpg-xxx:5432/moneymanager`).
+   - Note: In Spring Boot JDBC, prepend `jdbc:` to the URL: `jdbc:postgresql://moneymanager_user:secret@dpg-xxx:5432/moneymanager`
+
+---
+
+### Step 2: Deploy Backend Web Service on Render
+
+1. On Render Dashboard, click **New +** → **Web Service**.
+2. Connect your GitHub repository: `https://github.com/Naveen-2004N/Money_Manager.git`.
+3. Configure settings:
+   - **Name**: `moneymanager-backend`
+   - **Region**: Select the same region as your database (e.g. `Oregon`)
+   - **Root Directory**: `backend`
+   - **Runtime / Environment**: `Docker`
+   - **Dockerfile Path**: `DockerFile`
+   - **Instance Type**: `Free`
+4. Expand **Advanced** → **Add Environment Variables**:
+   | Key | Value |
+   |---|---|
+   | `SPRING_PROFILES_ACTIVE` | `prod` |
+   | `SPRING_DATASOURCE_URL` | `jdbc:postgresql://<host>:5432/moneymanager` *(from Step 1)* |
+   | `SPRING_DATASOURCE_USERNAME` | `<db-user>` *(from Step 1)* |
+   | `SPRING_DATASOURCE_PASSWORD` | `<db-password>` *(from Step 1)* |
+5. Click **Deploy Web Service**.
+6. When deployment finishes, note down your backend public URL (e.g., `https://moneymanager-backend.onrender.com`).
+   - Verify by visiting: `https://moneymanager-backend.onrender.com/api/v1.0/health` (returns *"Running Successfully"*).
+
+---
+
+### Step 3: Deploy Frontend on Vercel
+
+1. Log into [Vercel](https://vercel.com).
+2. Click **Add New...** → **Project** and import your repository: `Naveen-2004N/Money_Manager`.
+3. Configure project settings:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: Click *Edit* and select **`frontend`**.
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. Expand **Environment Variables**:
+   - **Key**: `VITE_API_BASE_URL`
+   - **Value**: `https://<your-render-backend-url>.onrender.com/api/v1.0`
+5. Click **Deploy**.
+6. Your Money Manager frontend is now live with global edge CDN, automatic HTTPS, and SPA routing!
+
+*(Alternative: You can also deploy the frontend on Render as a **Static Site** by setting Root Directory to `frontend`, Build Command to `npm run build`, and Publish Directory to `dist`)*
 
 ---
 
