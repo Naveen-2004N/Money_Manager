@@ -2,7 +2,11 @@
 
 # 💰 Money Manager
 
-**A full-stack personal finance and expense tracking web application built with Spring Boot 3.5, React 19, and MySQL.**
+**A modern full-stack personal finance and expense tracking web application built with Spring Boot 3.5, React 19, and MySQL.**
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://money-manager-six-mocha.vercel.app/)
+[![API Status](https://img.shields.io/badge/Backend_API-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://moneymanager-backend-b26r.onrender.com/api/v1.0/health)
+[![Database](https://img.shields.io/badge/Database-TiDB_MySQL-E30C34?style=for-the-badge&logo=mysql&logoColor=white)](https://tidbcloud.com)
 
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.3-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -13,6 +17,8 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
+### 🚀 [View Live Application: money-manager-six-mocha.vercel.app](https://money-manager-six-mocha.vercel.app/)
+
 <p align="center">
   Money Manager provides users with real-time financial tracking, intuitive category-based budgeting, insightful visual trend analytics with interactive charts, and multi-criteria transaction filtering.
 </p>
@@ -21,22 +27,29 @@
 
 ---
 
+## 🌐 Live Deployment Details
+
+| Component | Provider | Live URL / Endpoint | Details |
+|---|---|---|---|
+| 🌐 **Frontend (UI)** | **Vercel** | [money-manager-six-mocha.vercel.app](https://money-manager-six-mocha.vercel.app/) | React 19 SPA with global edge CDN |
+| ⚙️ **Backend (API)** | **Render** | [moneymanager-backend-b26r.onrender.com](https://moneymanager-backend-b26r.onrender.com/api/v1.0/health) | Spring Boot 3.5 Docker container |
+| 🗄️ **Database** | **TiDB Cloud** | Public Endpoint (TLS) | Serverless MySQL 8 |
+
+---
+
 ## 📑 Table of Contents
 
+- [Live Deployment Details](#-live-deployment-details)
 - [Features](#-features)
 - [Architecture & Tech Stack](#-architecture--tech-stack)
 - [Project Structure](#-project-structure)
 - [Database Schema](#-database-schema)
-- [Getting Started (Local)](#-getting-started-local)
+- [Cloud Deployment (Render, Vercel & TiDB)](#-cloud-deployment-render-vercel--tidb)
+- [Getting Started (Local Development)](#-getting-started-local-development)
   - [Prerequisites](#prerequisites)
   - [1. Backend Setup](#1-backend-setup-spring-boot)
   - [2. Frontend Setup](#2-frontend-setup-react--vite)
 - [Docker Deployment](#-docker-deployment)
-- [Cloud Deployment (Render & Vercel)](#-cloud-deployment-render--vercel)
-  - [Architecture Overview](#architecture-overview)
-  - [Step 1: PostgreSQL on Render](#step-1-create-postgresql-database-on-render)
-  - [Step 2: Backend on Render](#step-2-deploy-backend-web-service-on-render)
-  - [Step 3: Frontend on Vercel](#step-3-deploy-frontend-on-vercel)
 - [API Reference](#-api-reference)
 - [Security & Authentication](#-security--authentication)
 - [License](#-license)
@@ -91,6 +104,7 @@
 - **HTTP Client**: Axios with JWT Interceptors
 - **Notifications**: React Hot Toast
 - **Date Handling**: date-fns
+- **Hosting**: Vercel (Edge Network)
 
 ### Backend
 - **Framework**: Spring Boot 3.5.3 (Java 21)
@@ -100,10 +114,11 @@
 - **Spreadsheet Generation**: Apache POI (OOXML 5.2.5)
 - **Boilerplate Reduction**: Project Lombok
 - **Containerization**: Multi-stage Dockerfile (Eclipse Temurin 21 JRE)
+- **Hosting**: Render (Docker Web Service)
 
 ### Database
-- **Primary / Local**: MySQL 8.0+
-- **Production / Cloud**: PostgreSQL
+- **Production**: TiDB Cloud (Serverless MySQL 8)
+- **Local**: MySQL 8.0+
 
 ---
 
@@ -128,8 +143,8 @@ Money_Manager/
 │       │   │   ├── service/                     # Business logic and services
 │       │   │   └── util/                        # Exceptions and JWT helper utilities
 │       │   └── resources/
-│       │       ├── application.properties       # Default local configuration (MySQL)
-│       │       └── application-prod.properties  # Production configuration (PostgreSQL)
+│       │       ├── application.properties       # Default local & cloud MySQL configuration
+│       │       └── application-prod.properties  # Optional PostgreSQL production configuration
 │       └── test/                                # JUnit test suites
 ├── frontend/
 │   ├── index.html                               # HTML template
@@ -208,7 +223,39 @@ erDiagram
 
 ---
 
-## 🚀 Getting Started (Local)
+## ☁️ Cloud Deployment (Render, Vercel & TiDB)
+
+The project is fully deployed to production using the following modern cloud architecture:
+
+### 1. Database: TiDB Cloud (Serverless MySQL)
+- Provisioned a free serverless MySQL cluster on [TiDB Cloud](https://tidbcloud.com).
+- Allowed public traffic (`0.0.0.0` - `255.255.255.255`) to enable Render communication.
+- Secure connection established using TLS with `sslMode=VERIFY_IDENTITY`.
+
+### 2. Backend: Render (Docker Web Service)
+- **Service Name**: `moneymanager-backend`
+- **Root Directory**: `backend`
+- **Environment**: `Docker`
+- **Dockerfile Path**: `DockerFile`
+- **Environment Variables**:
+  - `SPRING_DATASOURCE_URL`: `jdbc:mysql://<host>:4000/test?sslMode=VERIFY_IDENTITY&createDatabaseIfNotExist=true`
+  - `SPRING_DATASOURCE_USERNAME`: `<username>`
+  - `SPRING_DATASOURCE_PASSWORD`: `<password>`
+- **Live Endpoint**: [https://moneymanager-backend-b26r.onrender.com](https://moneymanager-backend-b26r.onrender.com/api/v1.0/health)
+
+### 3. Frontend: Vercel (React 19 SPA)
+- **Framework Preset**: `Vite`
+- **Root Directory**: `frontend`
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Environment Variables**:
+  - `VITE_API_BASE_URL`: `https://moneymanager-backend-b26r.onrender.com/api/v1.0`
+- **Routing**: `vercel.json` rewrite rules configured for seamless client-side page reloads.
+- **Live URL**: [https://money-manager-six-mocha.vercel.app/](https://money-manager-six-mocha.vercel.app/)
+
+---
+
+## 🚀 Getting Started (Local Development)
 
 ### Prerequisites
 
@@ -274,7 +321,7 @@ erDiagram
    ```
 
 5. **Open in Browser**:
-   Visit **`http://localhost:5173`** to access the application.
+   Visit **`http://localhost:5173`** to access the local application.
 
 ---
 
@@ -291,89 +338,17 @@ The backend includes a multi-stage Dockerfile for fast, containerized deployment
 2. **Run the Container**:
    ```bash
    docker run -d -p 8080:8080 \
-     -e SPRING_PROFILES_ACTIVE=prod \
-     -e MONEY_MANAGER_POSTGRESQL_URL="jdbc:postgresql://host.docker.internal:5432/moneymanager" \
-     -e MONEY_MANAGER_POSTGRESQL_USERNAME="postgres" \
-     -e MONEY_MANAGER_POSTGRESQL_PASSWORD="your_password" \
+     -e SPRING_DATASOURCE_URL="jdbc:mysql://<host>:<port>/<dbname>" \
+     -e SPRING_DATASOURCE_USERNAME="<username>" \
+     -e SPRING_DATASOURCE_PASSWORD="<password>" \
      --name moneymanager-api moneymanager-backend:latest
    ```
 
 ---
 
-## 🌐 Cloud Deployment (Render & Vercel)
-
-### Architecture Overview
-
-| Component | Recommended Platform | Type | Free Tier |
-|---|---|---|:---:|
-| **Database** | [Render](https://render.com) | Managed PostgreSQL | ✅ |
-| **Backend API** | [Render](https://render.com) | Docker Web Service | ✅ |
-| **Frontend UI** | [Vercel](https://vercel.com) *(or Render)* | Vite SPA Static Site | ✅ |
-
----
-
-### Step 1: Create PostgreSQL Database on Render
-
-1. Log into your [Render Dashboard](https://dashboard.render.com).
-2. Click **New +** → **PostgreSQL**.
-3. Configure the database:
-   - **Name**: `moneymanager-db`
-   - **Database**: `moneymanager`
-   - **User**: `moneymanager_user`
-   - **Region**: Choose the closest region (e.g. `Oregon`)
-   - **Plan**: `Free`
-4. Click **Create Database**.
-5. Once created, copy the **Internal Database URL** (for example: `postgres://moneymanager_user:secret@dpg-xxx:5432/moneymanager`).
-   - Note: In Spring Boot JDBC, prepend `jdbc:` to the URL: `jdbc:postgresql://moneymanager_user:secret@dpg-xxx:5432/moneymanager`
-
----
-
-### Step 2: Deploy Backend Web Service on Render
-
-1. On Render Dashboard, click **New +** → **Web Service**.
-2. Connect your GitHub repository: `https://github.com/Naveen-2004N/Money_Manager.git`.
-3. Configure settings:
-   - **Name**: `moneymanager-backend`
-   - **Region**: Select the same region as your database (e.g. `Oregon`)
-   - **Root Directory**: `backend`
-   - **Runtime / Environment**: `Docker`
-   - **Dockerfile Path**: `DockerFile`
-   - **Instance Type**: `Free`
-4. Expand **Advanced** → **Add Environment Variables**:
-   | Key | Value |
-   |---|---|
-   | `SPRING_PROFILES_ACTIVE` | `prod` |
-   | `SPRING_DATASOURCE_URL` | `jdbc:postgresql://<host>:5432/moneymanager` *(from Step 1)* |
-   | `SPRING_DATASOURCE_USERNAME` | `<db-user>` *(from Step 1)* |
-   | `SPRING_DATASOURCE_PASSWORD` | `<db-password>` *(from Step 1)* |
-5. Click **Deploy Web Service**.
-6. When deployment finishes, note down your backend public URL (e.g., `https://moneymanager-backend.onrender.com`).
-   - Verify by visiting: `https://moneymanager-backend.onrender.com/api/v1.0/health` (returns *"Running Successfully"*).
-
----
-
-### Step 3: Deploy Frontend on Vercel
-
-1. Log into [Vercel](https://vercel.com).
-2. Click **Add New...** → **Project** and import your repository: `Naveen-2004N/Money_Manager`.
-3. Configure project settings:
-   - **Framework Preset**: `Vite`
-   - **Root Directory**: Click *Edit* and select **`frontend`**.
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-4. Expand **Environment Variables**:
-   - **Key**: `VITE_API_BASE_URL`
-   - **Value**: `https://<your-render-backend-url>.onrender.com/api/v1.0`
-5. Click **Deploy**.
-6. Your Money Manager frontend is now live with global edge CDN, automatic HTTPS, and SPA routing!
-
-*(Alternative: You can also deploy the frontend on Render as a **Static Site** by setting Root Directory to `frontend`, Build Command to `npm run build`, and Publish Directory to `dist`)*
-
----
-
 ## 📡 API Reference
 
-Base URL: `http://localhost:8080/api/v1.0`
+Base URL: `https://moneymanager-backend-b26r.onrender.com/api/v1.0` (or `http://localhost:8080/api/v1.0` locally)
 
 ### Authentication & User
 
@@ -427,7 +402,7 @@ Base URL: `http://localhost:8080/api/v1.0`
 
 - **Stateless Architecture**: Client sends the JWT token in the `Authorization: Bearer <TOKEN>` header with each request.
 - **`JwtRequestFilter`**: Validates token claims and populates the `SecurityContext` on authenticated routes.
-- **CORS Protection**: Configured via `CorsConfig` allowing secure cross-origin communication between the frontend (`http://localhost:5173`) and backend APIs.
+- **CORS Protection**: Configured via `CorsConfig` allowing secure cross-origin communication between the frontend (`https://money-manager-six-mocha.vercel.app`) and backend APIs.
 - **Password Security**: Passwords are encrypted before persisting into the database using Spring Security's `BCryptPasswordEncoder`.
 
 ---
